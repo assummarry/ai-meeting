@@ -25,9 +25,11 @@ jobs:
         pip install pyinstaller
 
     - name: PyInstaller 打包（单文件 - 超级加强版）
+      shell: cmd
       run: |
         pyinstaller --onefile --windowed ^
           --name "多智能体白皮书工坊-v4" ^
+          --add-data "workshop.py;." ^
           --collect-all streamlit ^
           --collect-all langgraph ^
           --collect-all langchain ^
