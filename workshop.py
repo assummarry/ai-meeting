@@ -537,16 +537,20 @@ def make_nodes(client: OpenAI, model: str, detail_instruction: str = "") -> dict
             new_summary = call_llm_summary(client, model, text_to_compress)
 
         if new_summary:
-            summary_context = (
-                f"{prev_summary}\n\n---（新一轮）---\n\n{new_summary}"
-                if prev_summary else new_summary
-            )
+            if prev_summary:
+                summary_blocks = prev_summary.split("\n\n---（新一轮）---\n\n")
+                summary_blocks.append(new_summary)
+                # 强制截断：只保留最近的 2 轮摘要
+                if len(summary_blocks) > 2:
+                    summary_blocks = summary_blocks[-2:]
+                summary_context = "\n\n---（新一轮）---\n\n".join(summary_blocks)
+            else:
+                summary_context = new_summary
         else:
             summary_context = prev_summary
 
         # [fix2] 文档压制允许更大 Token 预算，尽量保留完整讨论
-        discussion = fmt_msgs(round_msgs, token_budget=4000)
-
+        discussion = fmt_msgs(round_msgs, token_budget=4000)    
         user_input = (
             f"用户原始需求：\n{user_prompt}\n\n"
             f"架构师讨论记录：\n{discussion}\n\n"
