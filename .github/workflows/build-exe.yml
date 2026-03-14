@@ -24,13 +24,23 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: PyInstaller 打包（单文件）
+    - name: PyInstaller 打包（单文件 - 加强版）
       run: |
         pyinstaller --onefile --windowed ^
           --name "多智能体白皮书工坊-v4" ^
           --collect-all streamlit ^
           --collect-all langgraph ^
           --collect-all langchain ^
+          --collect-all langchain_core ^
+          --collect-all pandas ^
+          --collect-all numpy ^
+          --collect-all altair ^
+          --collect-all plotly ^
+          --collect-all pyarrow ^
+          --hidden-import=streamlit.runtime.scriptrunner ^
+          --hidden-import=altair ^
+          --hidden-import=plotly ^
+          --hidden-import=langgraph.checkpoint ^
           run_app.py
 
     - name: 上传 EXE 到 Release
