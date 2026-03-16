@@ -78,5 +78,5 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'release'
       with:
-        files: dist/whitepaper-workshop-v4.exe
+        files: dist/*.exe
         overwrite_files: true
