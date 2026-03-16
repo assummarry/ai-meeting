@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 消除 Node.js 20 warning
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# 修复 403：声明写入 Release 所需权限
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,7 +24,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        cache: 'pip'                          # 缓存 pip 依赖，加速后续构建
+        cache: 'pip'
 
     - name: 安装依赖和 PyInstaller
       run: |
@@ -28,7 +32,6 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    # 验证关键文件存在，便于排查路径问题
     - name: 验证文件结构
       run: |
         dir
@@ -68,15 +71,12 @@ jobs:
           --hidden-import=pkg_resources.py2_warn `
           run_app.py
 
-    # 确认 EXE 确实生成了
     - name: 验证打包产物
-      run: |
-        dir dist\
+      run: dir dist\
 
     - name: 上传 EXE 到 Release
       uses: softprops/action-gh-release@v2
+      if: github.event_name == 'release'
       with:
-        with:
-        tag_name: ${{ github.ref_name }}     # ← 关键修复！
-        files: dist/ai-meeting-workshop-v4.exe
-        overwrite: true
+        files: dist/whitepaper-workshop-v4.exe
+        overwrite_files: true
