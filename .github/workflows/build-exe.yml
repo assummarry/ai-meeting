@@ -76,7 +76,7 @@ jobs:
 
     - name: 上传 EXE 到 Release
       uses: softprops/action-gh-release@v2
-      if: github.event_name == 'release'
       with:
+        tag_name: ${{ github.ref_name }}
         files: dist/*.exe
         overwrite_files: true
