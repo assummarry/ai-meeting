@@ -40,7 +40,7 @@ jobs:
       run: |
         pyinstaller --onefile `
           --name "多智能体白皮书工坊-v4" `
-          --add-data "workshop.py;." `
+          --add-data 'workshop.py;.' `
           --collect-all streamlit `
           --collect-all langgraph `
           --collect-all langchain `
