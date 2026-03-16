@@ -76,4 +76,7 @@ jobs:
     - name: 上传 EXE 到 Release
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/whitepaper-workshop-v4.exe
+        with:
+        tag_name: ${{ github.ref_name }}     # ← 关键修复！
+        files: dist/ai-meeting-workshop-v4.exe
+        overwrite: true
