@@ -5,6 +5,9 @@ on:
     types: [created]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 消除 Node.js 20 warning
+
 jobs:
   build:
     runs-on: windows-latest
@@ -17,6 +20,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+        cache: 'pip'                          # 缓存 pip 依赖，加速后续构建
 
     - name: 安装依赖和 PyInstaller
       run: |
@@ -24,33 +28,50 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
 
-    - name: PyInstaller 打包（单文件 - 超级加强版）
-      shell: cmd
+    # 验证关键文件存在，便于排查路径问题
+    - name: 验证文件结构
       run: |
-        pyinstaller --onefile --windowed ^
-          --name "多智能体白皮书工坊-v4" ^
-          --add-data "workshop.py;." ^
-          --collect-all streamlit ^
-          --collect-all langgraph ^
-          --collect-all langchain ^
-          --collect-all langchain_core ^
-          --collect-all openai ^
-          --collect-all pandas ^
-          --collect-all numpy ^
-          --collect-all altair ^
-          --collect-all plotly ^
-          --collect-all pyarrow ^
-          --collect-all pydantic ^
-          --hidden-import=streamlit ^
-          --hidden-import=streamlit.web.cli ^
-          --hidden-import=streamlit.runtime.scriptrunner ^
-          --hidden-import=streamlit.elements ^
-          --hidden-import=altair ^
-          --hidden-import=plotly ^
-          --hidden-import=langgraph ^
-          --hidden-import=openai ^
-          --hidden-import=pydantic ^
+        dir
+        python -c "import streamlit; print('streamlit:', streamlit.__version__)"
+        python -c "import langgraph; print('langgraph OK')"
+
+    - name: PyInstaller 打包
+      shell: powershell
+      run: |
+        pyinstaller --onefile `
+          --name "多智能体白皮书工坊-v4" `
+          --add-data "workshop.py;." `
+          --collect-all streamlit `
+          --collect-all langgraph `
+          --collect-all langchain `
+          --collect-all langchain_core `
+          --collect-all langchain_community `
+          --collect-all openai `
+          --collect-all pandas `
+          --collect-all numpy `
+          --collect-all altair `
+          --collect-all plotly `
+          --collect-all pyarrow `
+          --collect-all pydantic `
+          --collect-all pydantic_core `
+          --hidden-import=streamlit.web.cli `
+          --hidden-import=streamlit.runtime.scriptrunner `
+          --hidden-import=streamlit.runtime.scriptrunner.magic_funcs `
+          --hidden-import=streamlit.elements `
+          --hidden-import=streamlit.components.v1 `
+          --hidden-import=langgraph.graph `
+          --hidden-import=langgraph.checkpoint `
+          --hidden-import=langchain_core.runnables `
+          --hidden-import=openai `
+          --hidden-import=pydantic `
+          --hidden-import=pydantic.v1 `
+          --hidden-import=pkg_resources.py2_warn `
           run_app.py
+
+    # 确认 EXE 确实生成了
+    - name: 验证打包产物
+      run: |
+        dir dist\
 
     - name: 上传 EXE 到 Release
       uses: softprops/action-gh-release@v2
